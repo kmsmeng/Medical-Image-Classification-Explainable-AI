@@ -19,7 +19,7 @@ def train_one_epoch(model, loader, optimizer, criterion, scaler, device):
         optimizer.zero_grad()
 
         # Mixed precision forward pass
-        with torch.amp.autocast(enabled=(device.type == 'cuda')):
+        with torch.amp.autocast(device_type=device.type, enabled=(device.type == 'cuda')):
             logits = model(images) # (B, 14)
             loss = criterion(logits, labels)
 

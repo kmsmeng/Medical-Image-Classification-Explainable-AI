@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-def evaluate(model, loader, criterion, device, classes:None):
+def evaluate(model, loader, criterion, device, classes):
     """
     Run evaluation on val or test set
 
@@ -21,17 +21,18 @@ def evaluate(model, loader, criterion, device, classes:None):
             images = images.to(device, non_blocking = True)
             labels = labels.to(device, non_blocking = True)
 
-            with torch.amp.autocast(enabled=(device.type == 'cuda')):
+            with torch.amp.autocast(device_type=device.type, enabled=(device.type == 'cuda')):
                 logits = model(images)
                 loss = criterion(logits, labels)
             
             probs = torch.sigmoid(logits)
 
             total_loss += loss.item()
+            num_batches += 1
 
             all_probs.append(probs.cpu().numpy())
+            all_labels.append(labels.cpu().numpy())
 
-            num_batches += 1
 
             if (batch_idx + 1) % 50 == 0:
                 print(f'    Batch: {batch_idx+1}/{len(loader)} | loss: {loss.item():.4f}')
@@ -39,4 +40,4 @@ def evaluate(model, loader, criterion, device, classes:None):
 
             # all_probs = np.concatenate(all)
 
-        return probs
+        return all_probs, all_labels
